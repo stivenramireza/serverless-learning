@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  grade-calculator-app
+
+  Sample SAM Template for grade-calculator-app
+
+Globals:
+  Function:
+    Runtime: python3.8
+    Architectures:
+      - x86_64
+    Timeout: 20
+
+Resources:
+  GradeCalculatorDLQ:
+    Type: AWS::SNS::Topic
+  GradeCalculatorTopic:
+    Type: AWS::SNS::Topic
+  GradeCalculatorBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+  GradeCalculatorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: grade_calculator/
+      Handler: grade_calculator.lambda_handler
+      DeadLetterQueue:
+        Type: SNS
+        TargetArn: !Ref GradeCalculatorDLQ
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Sub ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt GradeCalculatorTopic.TopicName
+      Environment:
+        Variables:
+          GRADE_CALCULATOR_TOPIC: !Ref GradeCalculatorTopic
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref GradeCalculatorBucket
+            Events: s3:ObjectCreated:*
+  ReportGeneratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: grade_calculator/
+      Handler: report_generator.lambda_handler
+      Events:
+        SNSEvent:
+          Type: SNS
+          Properties:
+            Topic: !Ref GradeCalculatorTopic
+  ClaimManagementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: grade_calculator/
+      Handler: claim_management.lambda_handler
+      Events:
+        ClaimEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ClaimManagementQueue.Arn
+            BatchSize: 10
+  ErrorHandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: grade_calculator/
+      Handler: error_handler.lambda_handler
+      Events:
+        SNSEvent:
+          Type: SNS
+          Properties:
+            Topic: !Ref GradeCalculatorDLQ
+  ClaimManagementQueue:
+    Type: AWS::SQS::Queue

@@ -1,0 +1,11 @@
+# Code editors
+.vscode
+
+# Virtual environments
+venv
+
+# Python cache
+__pycache__
+
+# AWS SAM
+*/.aws-sam

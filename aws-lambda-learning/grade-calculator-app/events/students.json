@@ -1,0 +1,22 @@
+[
+  {
+    "rollNo": 1,
+    "name": "Stiven Ramirez Arango",
+    "testScore": 80
+  },
+  {
+    "rollNo": 2,
+    "name": "Manuel Alfonso Arias",
+    "testScore": 70
+  },
+  {
+    "rollNo": 3,
+    "name": "Jhon Alexander Perdomo",
+    "testScore": 60
+  },
+  {
+    "rollNo": 4,
+    "name": "Daniela Caceres Ospina",
+    "testScore": 40
+  }
+]

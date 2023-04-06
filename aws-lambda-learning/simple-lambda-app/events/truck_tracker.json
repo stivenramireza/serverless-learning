@@ -1,0 +1,6 @@
+{
+    "httpMethod": "GET",
+    "pathParameters": {
+        "tracker_id": 123
+    }
+}

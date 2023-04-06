@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  patient-checkout
+
+  Sample SAM Template for patient-checkout
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 20
+
+Resources:
+  PatientCheckoutTopic:
+    Type: AWS::SNS::Topic
+  PatientCheckoutBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+  PatientCheckoutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: patient_checkout/
+      Handler: patient_checkout.lambda_handler
+      Runtime: python3.8
+      Architectures:
+        - x86_64
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Sub ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt PatientCheckoutTopic.TopicName
+      Environment:
+        Variables:
+          PATIENT_CHECKOUT_TOPIC: !Ref PatientCheckoutTopic
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref PatientCheckoutBucket
+            Events: s3:ObjectCreated:*
+  BillManagementFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: patient_checkout/
+      Handler: bill_management.lambda_handler
+      Runtime: python3.8
+      Architectures:
+        - x86_64
+      Events:
+        SNSEvent:
+          Type: SNS
+          Properties:
+            Topic: !Ref PatientCheckoutTopic

@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  customer-api
+
+Globals:
+  Function:
+    Runtime: python3.8
+    Architectures:
+      - x86_64
+    Timeout: 30
+    Environment:
+      Variables:
+        CUSTOMERS_TABLE: !Ref CustomersTable
+
+Resources:
+  CustomersTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: Number
+  CreateCustomerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: create_customer.lambda_handler
+      Events:
+        CreateCustomer:
+          Type: Api
+          Properties:
+            Path: /customers
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CustomersTable
+  GetCustomerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: get_customer.lambda_handler
+      Events:
+        CreateCustomer:
+          Type: Api
+          Properties:
+            Path: /customers/{id}
+            Method: GET
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref CustomersTable
+
+Outputs:
+  CreateCustomerAPI:
+    Description: "API Gateway endpoint for creating customers"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/customers"
+  GetCustomerAPI:
+    Description: "API Gateway endpoint for getting customers"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Stage/customers/{id}"
+  CreateCustomerFunction:
+    Description: "Create customer function ARN"
+    Value: !GetAtt CreateCustomerFunction.Arn
+  CreateCustomerFunctionIamRole:
+    Description: "Create customer function IAM Role ARN"
+    Value: !GetAtt CreateCustomerFunctionRole.Arn
+  GetCustomerFunction:
+    Description: "Get customer function ARN"
+    Value: !GetAtt GetCustomerFunction.Arn
+  GetCustomerFunctionIamRole:
+    Description: "Get customer function IAM Role ARN"
+    Value: !GetAtt GetCustomerFunctionRole.Arn

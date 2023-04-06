@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "customer-api"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1obz4mrq1fbgm"
+s3_prefix = "customer-api"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+image_repositories = []

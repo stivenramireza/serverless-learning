@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  firstlambda
+
+  Sample SAM Template for firstlambda
+
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello_world/
+      Handler: data_types.cold_start_basics
+      Runtime: python3.8
+      Timeout: 7
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          REST_API_URL: http://dummyurl
+          DB_NAME: mydb
+  TruckTrackerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: trip/
+      Handler: truck_tracker.lambda_handler
+      Runtime: python3.8
+      Architectures:
+        - x86_64
+  GetTicketFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: trip/
+      Handler: get_ticket.lambda_handler
+      Runtime: python3.8
+      Architectures:
+        - x86_64
