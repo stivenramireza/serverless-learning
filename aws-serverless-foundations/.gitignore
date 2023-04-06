@@ -1,0 +1,15 @@
+# Code editors
+.vscode
+
+# Virtual environments
+venv
+
+# Python cache
+__pycache__
+
+# Serverless
+.dynamodb
+.serverless
+
+# Node
+node_modules

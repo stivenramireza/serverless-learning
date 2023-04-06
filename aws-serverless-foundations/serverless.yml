@@ -1,0 +1,94 @@
+service: users-api
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: 'dynamodb:*'
+          Resource: arn:aws:dynamodb:us-east-1
+
+plugins:
+  - serverless-offline
+  - serverless-dynamodb-local
+
+custom:
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+
+package:
+  individually: true
+  patterns:
+    - "!*/**"
+
+functions:
+  get-users:
+    handler: src/functions/users/get-users.handler
+    runtime: python3.8
+    package:
+      patterns:
+        - "src/functions/users/get-users.py"
+    events:
+      - http:
+          path: users
+          method: GET
+  get-user:
+    handler: src/functions/users/get-user.handler
+    package:
+      patterns:
+        - "src/functions/users/get-user.js"
+    events:
+      - http:
+          path: users/{id}
+          method: GET
+  create-users:
+    handler: src/functions/users/create-users.handler
+    package:
+      patterns:
+        - "src/functions/users/create-users.js"
+    events:
+      - http:
+          path: users
+          method: POST
+  update-users:
+    handler: src/functions/users/update-users.handler
+    package:
+      patterns:
+        - "src/functions/users/update-users.js"
+    events:
+      - http:
+          path: users/{id}
+          method: PATCH
+  delete-users:
+    handler: src/functions/users/delete-users.handler
+    runtime: python3.8
+    package:
+      patterns:
+        - "src/functions/users/delete-users.py"
+    events:
+      - http:
+          path: users/{id}
+          method: DELETE
+
+resources:
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: usersTable
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

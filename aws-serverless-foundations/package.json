@@ -1,0 +1,17 @@
+{
+  "name": "hola-mundo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "scripts": {
+    "start": "sls offline start"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "aws-sdk": "^2.1343.0",
+    "serverless": "^3.21.0",
+    "serverless-offline": "^12.0.4",
+    "serverless-dynamodb-local": "^0.2.40"
+  }
+}
