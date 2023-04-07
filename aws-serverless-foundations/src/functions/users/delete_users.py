@@ -1,6 +1,6 @@
 import json
 
-from ...utils.dynamo import table
+from src.utils.dynamo import table
 
 def handler(event, context):
     user_id = event.get('pathParameters').get('id')

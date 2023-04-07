@@ -8,7 +8,7 @@ provider:
       statements:
         - Effect: Allow
           Action: 'dynamodb:*'
-          Resource: arn:aws:dynamodb:us-east-1
+          Resource: arn:aws:dynamodb:us-east-1:328697830963:table/usersTable
 
 plugins:
   - serverless-offline
@@ -30,7 +30,7 @@ package:
 
 functions:
   get-users:
-    handler: src/functions/users/get-users.handler
+    handler: src.functions.users.get_users.handler
     runtime: python3.8
     package:
       patterns:
@@ -67,7 +67,7 @@ functions:
           path: users/{id}
           method: PATCH
   delete-users:
-    handler: src/functions/users/delete-users.handler
+    handler: src.functions.users.delete_users.handler
     runtime: python3.8
     package:
       patterns:

@@ -1,7 +1,7 @@
 import os
 import boto3
 
-from .constants import USERS_TABLE
+from src.utils.constants import USERS_TABLE
 
 client = boto3.resource('dynamodb')
 
