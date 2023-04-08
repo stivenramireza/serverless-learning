@@ -53,7 +53,7 @@ custom:
         response:
           template:
             success: |-
-              { "message: "accepted" }
+              { "message": "accepted" }
             clientError: |-
               { "message": "there is an error in your request" }
             serverError: |-
