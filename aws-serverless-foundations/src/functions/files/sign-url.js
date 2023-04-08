@@ -4,7 +4,7 @@ const handler = async (event, context) => {
     const fileName = event.queryStringParameters.filename;
 
     const signedUrl = await s3.getSignedUrlPromise('putObject', {
-        Key: `upload/${filename}`,
+        Key: `upload/${fileName}`,
         Bucket: process.env.BUCKET,
         Expires: 300
     });
