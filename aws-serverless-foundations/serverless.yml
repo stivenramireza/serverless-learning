@@ -24,6 +24,18 @@ provider:
 #   - serverless-dynamodb-local
 
 custom:
+  customDomain:
+    domainName: serverless.stivenramireza.com
+    stage: dev
+    basePath: api
+    certificateName: '*.stivenramireza.com'
+    createRoute53Record: true
+    createRoute53IPv6Record: true
+    endpointType: 'regional'
+    securityPolicy: tls_1_2
+    apiType: rest
+    autoDomain: false
+
   dynamodb:
     stages:
       - dev
@@ -31,11 +43,40 @@ custom:
       port: 8000
       inMemory: true
       migrate: true
+  
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /users/likes
+        method: post
+        queueName: like-queue
+        cors: true
+        response:
+          template:
+            success: |-
+              { "message: "accepted" }
+            clientError: |-
+              { "message": "there is an error in your request" }
+            serverError: |-
+              { "message": "there was an error handling your request" }
 
 package:
   individually: true
   patterns:
     - "!*/**"
+
+constructs:
+  sqs-queue:
+    type: queue
+    batchSize: 1
+    worker:
+      handler: src/functions/likes/like-users.handler
+      package:
+        patterns:
+          - "src/functions/likes/like-user.js"
+    extensions:
+      queue:
+        Properties:
+          QueueName: like-queue
 
 functions:
   custom-authorizer:
@@ -202,3 +243,7 @@ resources:
                   - !Ref S3Bucket
                   - /*
               Principal: '*'
+
+plugins:
+  - serverless-apigateway-service-proxy
+  - serverless-lift
