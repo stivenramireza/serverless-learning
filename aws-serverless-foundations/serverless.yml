@@ -9,6 +9,11 @@ provider:
         - Effect: Allow
           Action: 'dynamodb:*'
           Resource: arn:aws:dynamodb:us-east-1:328697830963:table/usersTable
+        - Effect: Allow
+          Action: 's3:*'
+          Resource: arn:aws:s3:::stivenramireza-serverless/*
+  environment:
+    BUCKET: stivenramireza-serverless
 
 plugins:
   - serverless-offline
@@ -35,8 +40,7 @@ functions:
     package:
       patterns:
         - "src/functions/users/get_users.py"
-        - "src/utils/constants.py"
-        - "src/utils/dynamo.py"
+        - "src/utils/*.py"
         - "requirements.txt"
     events:
       - http:
@@ -48,8 +52,7 @@ functions:
     package:
       patterns:
         - "src/functions/users/get-user.js"
-        - "src/utils/constants.js"
-        - "src/utils/dynamo.js"
+        - "src/utils/*.js"
     events:
       - http:
           path: users/{id}
@@ -65,8 +68,7 @@ functions:
       patterns:
         - "src/functions/users/create-users.js"
         - "src/schemas/user.json"
-        - "src/utils/constants.js"
-        - "src/utils/dynamo.js"
+        - "src/utils/*.js"
     events:
       - http:
           path: users
@@ -81,8 +83,7 @@ functions:
       patterns:
         - "src/functions/users/update-users.js"
         - "src/schemas/user.json"
-        - "src/utils/constants.js"
-        - "src/utils/dynamo.js"
+        - "src/utils/*.js"
     events:
       - http:
           path: users/{id}
@@ -100,8 +101,7 @@ functions:
     package:
       patterns:
         - "src/functions/users/delete_users.py"
-        - "src/utils/constants.py"
-        - "src/utils/dynamo.py"
+        - "src/utils/*.py"
     events:
       - http:
           path: users/{id}
@@ -110,6 +110,21 @@ functions:
             parameters:
               paths:
                 id: true
+
+  sign-url:
+    handler: src/functions/files/sign-url.handler
+    package:
+      patterns:
+        - "src/functions/files/sign-url.js"
+        - "src/utils/*.js"
+    events:
+      - http:
+          path: files/signed-url
+          method: GET
+          request:
+            parameters:
+              querystrings:
+                filename: true
 
 resources:
   Resources:
