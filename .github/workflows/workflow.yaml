@@ -1,18 +1,13 @@
-name: serverless-app
+name: Deploy DEV
 
 on:
-  push:
-    branches:
-      - main
-
-defaults:
-  run:
-    working-directory: aws-serverless-foundations
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  tests:
+  testing-changes:
     runs-on: ubuntu-latest
-    name: Dependencies and test
+    name: Build/Test
     steps:
     - uses: actions/checkout@v2
 
@@ -23,26 +18,24 @@ jobs:
     - name: Run Tests
       run: |
         npm run test
-  build-layers:
+
+  build-js-layer-deps:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     name: Build SLS Layer - Prod
     container:
       image: "node:14-buster"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-      - name: Zip package modules
-        run: |
+      - run: |
           npm install --production
           mkdir nodejs
           mv node_modules nodejs
           apt update -y && apt install zip -y
           zip -r nodejs.zip nodejs/
-      
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
+
+      - uses: actions/upload-artifact@v2
         with:
           name: nodejsdeps
           path: nodejs.zip
@@ -50,7 +43,7 @@ jobs:
   deploy-env:
     name: Deploy Lambda
     runs-on: ubuntu-latest
-    needs: [tests, build-layers]
+    needs: [testing-changes, build-js-layer-deps]
     steps:
     - uses: actions/checkout@v2.0.0
 
@@ -65,11 +58,10 @@ jobs:
       if: steps.cached-npm-dependencies.outputs.cache-hit != 'true'
       run: 'npm install'
 
-    - name: Download artifact
-      uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v2
       with:
         name: nodejsdeps
-        path: nodejs.zip
+        path: app/
 
     - name: Deploy using sls
       run: 'npx sls deploy'
@@ -83,4 +75,5 @@ jobs:
         message: |
           Your SLS App was deployed!
           Awesome :D
+
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
