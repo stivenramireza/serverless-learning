@@ -23,14 +23,20 @@ custom:
       inMemory: true
       migrate: true
 
+package:
+  individually: true
+  patterns:
+    - "!*/**"
+
 functions:
   get-users:
     handler: src/functions/users/get_users.handler
     runtime: python3.8
     package:
       patterns:
-        - "src/functions/users/get-users.py"
-        - "src/utils/*.py"
+        - "src/functions/users/get_users.py"
+        - "src/utils/constants.py"
+        - "src/utils/dynamo.py"
         - "requirements.txt"
     events:
       - http:
@@ -42,7 +48,8 @@ functions:
     package:
       patterns:
         - "src/functions/users/get-user.js"
-        - "src/utils/*.js"
+        - "src/utils/constants.js"
+        - "src/utils/dynamo.js"
     events:
       - http:
           path: users/{id}
@@ -58,7 +65,8 @@ functions:
       patterns:
         - "src/functions/users/create-users.js"
         - "src/schemas/user.json"
-        - "src/utils/*.js"
+        - "src/utils/constants.js"
+        - "src/utils/dynamo.js"
     events:
       - http:
           path: users
@@ -73,7 +81,8 @@ functions:
       patterns:
         - "src/functions/users/update-users.js"
         - "src/schemas/user.json"
-        - "src/utils/*.js"
+        - "src/utils/constants.js"
+        - "src/utils/dynamo.js"
     events:
       - http:
           path: users/{id}
@@ -90,9 +99,9 @@ functions:
     runtime: python3.8
     package:
       patterns:
-        - "src/functions/users/delete-users.py"
-        - "src/utils/*.py"
-        - "requirements.txt"
+        - "src/functions/users/delete_users.py"
+        - "src/utils/constants.py"
+        - "src/utils/dynamo.py"
     events:
       - http:
           path: users/{id}
@@ -117,3 +126,26 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+
+    S3Bucket:
+      Type: 'AWS::S3::Bucket'
+      Properties:
+        AccessControl: PublicRead
+        BucketName: stivenramireza-serverless
+
+    SampleBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref S3Bucket
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Action:
+                - 's3:GetObject'
+              Effect: Allow
+              Resource: !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref S3Bucket
+                  - /*
+              Principal: '*'
