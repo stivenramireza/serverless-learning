@@ -247,3 +247,4 @@ resources:
 plugins:
   - serverless-apigateway-service-proxy
   - serverless-lift
+  - serverless-domain-manager
