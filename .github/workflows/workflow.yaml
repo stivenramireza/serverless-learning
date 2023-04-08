@@ -30,15 +30,19 @@ jobs:
     container:
       image: "node:14-buster"
     steps:
+      - name: Checkout code
       - uses: actions/checkout@v2
 
+      - name: Zip package modules
       - run: |
           npm install --production
           mkdir nodejs
           mv node_modules nodejs
           apt update -y && apt install zip -y
           zip -r nodejs.zip nodejs/
-      - uses: actions/upload-artifact@v2
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
         with:
           name: nodejsdeps
           path: nodejs.zip
@@ -61,10 +65,11 @@ jobs:
       if: steps.cached-npm-dependencies.outputs.cache-hit != 'true'
       run: 'npm install'
 
-    - uses: actions/download-artifact@v2
+    - name: Download artifact
+      uses: actions/download-artifact@v2
       with:
         name: nodejsdeps
-        path: app/
+        path: nodejs.zip
 
     - name: Deploy using sls
       run: 'npx sls deploy'
