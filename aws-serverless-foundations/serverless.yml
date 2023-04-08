@@ -3,6 +3,9 @@ service: users-api
 provider:
   name: aws
   runtime: nodejs14.x
+  apiGateway:
+    apiKeys:
+      - users-api-key
   iam:
     role:
       statements:
@@ -44,6 +47,7 @@ functions:
         - "requirements.txt"
     events:
       - http:
+          private: true
           path: users
           method: GET
   
