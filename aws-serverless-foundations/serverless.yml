@@ -15,9 +15,9 @@ provider:
   environment:
     BUCKET: stivenramireza-serverless
 
-plugins:
-  - serverless-offline
-  - serverless-dynamodb-local
+# plugins:
+#   - serverless-offline
+#   - serverless-dynamodb-local
 
 custom:
   dynamodb:
@@ -125,6 +125,21 @@ functions:
             parameters:
               querystrings:
                 filename: true
+
+  thumb-generator:
+    handler: src/functions/files/thumb-generator.handler
+    package:
+      patterns:
+        - "src/functions/files/thumb-generator.js"
+        - "node_modules/**"
+        - "src/utils/*.js"
+    events:
+      - s3:
+          bucket: stivenramireza-serverless
+          event: s3:ObjectCreated:*
+          existing: true
+          rules:
+            - prefix: uploads/
 
 resources:
   Resources:
