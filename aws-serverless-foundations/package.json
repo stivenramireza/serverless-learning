@@ -4,6 +4,7 @@
   "description": "",
   "main": "handler.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\"",
     "start": "sls offline start"
   },
   "author": "",
