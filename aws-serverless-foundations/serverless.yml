@@ -128,10 +128,11 @@ functions:
 
   thumb-generator:
     handler: src/functions/files/thumb-generator.handler
+    layers:
+      - { Ref: BaseLambdaLayer }
     package:
       patterns:
         - "src/functions/files/thumb-generator.js"
-        - "node_modules/**"
         - "src/utils/*.js"
     events:
       - s3:
@@ -140,6 +141,14 @@ functions:
           existing: true
           rules:
             - prefix: upload/
+
+layers:
+  base:
+    name: "prod-dependencies"
+    compatibleRuntimes:
+      - "nodejs14.x"
+    package:
+      artifact: nodejs.zip
 
 resources:
   Resources:
