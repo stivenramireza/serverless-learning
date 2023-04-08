@@ -31,10 +31,10 @@ jobs:
       image: "node:14-buster"
     steps:
       - name: Checkout code
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
 
       - name: Zip package modules
-      - run: |
+        run: |
           npm install --production
           mkdir nodejs
           mv node_modules nodejs
