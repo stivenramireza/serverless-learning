@@ -139,7 +139,7 @@ functions:
           event: s3:ObjectCreated:*
           existing: true
           rules:
-            - prefix: uploads/
+            - prefix: upload/
 
 resources:
   Resources:
