@@ -3,6 +3,9 @@ service: users-api
 provider:
   name: aws
   runtime: nodejs14.x
+  apiGateway:
+    apiKeys:
+      - users-api-key
   iam:
     role:
       statements:
@@ -14,12 +17,25 @@ provider:
           Resource: arn:aws:s3:::stivenramireza-serverless/*
   environment:
     BUCKET: stivenramireza-serverless
+    SECRET_EGG: ${ssm:/SECRET_EGG}
 
 # plugins:
 #   - serverless-offline
 #   - serverless-dynamodb-local
 
 custom:
+  customDomain:
+    domainName: serverless.stivenramireza.com
+    stage: dev
+    basePath: api
+    certificateName: '*.stivenramireza.com'
+    createRoute53Record: true
+    createRoute53IPv6Record: true
+    endpointType: 'regional'
+    securityPolicy: tls_1_2
+    apiType: rest
+    autoDomain: false
+
   dynamodb:
     stages:
       - dev
@@ -27,13 +43,48 @@ custom:
       port: 8000
       inMemory: true
       migrate: true
+  
+  apiGatewayServiceProxies:
+    - sqs:
+        path: /users/likes
+        method: post
+        queueName: like-queue
+        cors: true
+        response:
+          template:
+            success: |-
+              { "message": "accepted" }
+            clientError: |-
+              { "message": "there is an error in your request" }
+            serverError: |-
+              { "message": "there was an error handling your request" }
 
 package:
   individually: true
   patterns:
     - "!*/**"
 
+constructs:
+  sqs-queue:
+    type: queue
+    batchSize: 1
+    worker:
+      handler: src/functions/likes/like-users.handler
+      package:
+        patterns:
+          - "src/functions/likes/like-user.js"
+    extensions:
+      queue:
+        Properties:
+          QueueName: like-queue
+
 functions:
+  custom-authorizer:
+    handler: src/functions/auth/authorizer.handler
+    package:
+      patterns:
+        - "src/functions/auth/authorizer.js"
+
   get-users:
     handler: src/functions/users/get_users.handler
     runtime: python3.8
@@ -44,6 +95,7 @@ functions:
         - "requirements.txt"
     events:
       - http:
+          private: true
           path: users
           method: GET
   
@@ -76,7 +128,10 @@ functions:
           request:
             schemas:
               application/json: ${file(src/schemas/users/user.json)}
-  
+          authorizer:
+            name: custom-authorizer
+            resultTtlInSeconds: 15
+
   update-users:
     handler: src/functions/users/update-users.handler
     package:
@@ -188,3 +243,8 @@ resources:
                   - !Ref S3Bucket
                   - /*
               Principal: '*'
+
+plugins:
+  - serverless-apigateway-service-proxy
+  - serverless-lift
+  # - serverless-domain-manager
